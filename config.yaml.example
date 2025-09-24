@@ -1,0 +1,14 @@
+DB:
+  HOST: www.google.com
+  PERF:
+    POOL_SIZE: 30
+AWS_CONFIG:
+  S3_BUCKET_NAMES:
+    BUCKET_A: new-bucket
+  CLOUDWATCH:
+    LOG_GROUP_NAME: loggroup
+    STREAM_NAME: logstream
+  MAX_FILE_UPLOAD_SIZE_MB: 150
+  S3_SIGNATURE_VERSION: s3v4
+LOOKUP_DATA:
+  DATA_FILE_1: pyproject.toml
