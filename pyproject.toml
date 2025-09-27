@@ -1,6 +1,6 @@
 [project]
 name = "pydantic-config"
-version = "0.0.0"
+version = "0.0.1"
 description = "An opinionated template for configuration management using pydantic lib"
 
 # ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
