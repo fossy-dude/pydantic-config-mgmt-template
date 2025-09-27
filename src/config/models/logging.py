@@ -53,7 +53,13 @@ class LoggingConfig(BaseModel):
             try:
                 # Test the format string with dummy data
                 test_record = logging.LogRecord(
-                    name="test", level=logging.INFO, pathname="", lineno=0, msg="test", args=(), exc_info=None
+                    name="test",
+                    level=logging.INFO,
+                    pathname="",
+                    lineno=0,
+                    msg="test",
+                    args=(),
+                    exc_info=None,
                 )
                 _ = v % test_record.__dict__
             except (KeyError, ValueError, TypeError) as e:

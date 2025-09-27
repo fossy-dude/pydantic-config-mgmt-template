@@ -17,7 +17,7 @@ class TestSensitiveDataHandling:
 
     @pytest.fixture(autouse=True)
     def setup_test_env(self, clean_env, sample_env_file):
-        """Setup clean test environment and clear cache."""
+        """Create a clean test environment and clear cache."""
         # Clear cache before each test
         get_config.cache_clear()
 
@@ -41,10 +41,7 @@ class TestSensitiveDataHandling:
         # Check that sensitive fields are masked
         assert str(config_dict["DB"]["USERNAME"]) == "**********"
         assert str(config_dict["DB"]["PASSWORD"]) == "**********"
-        assert (
-            str(config_dict["LLM"]["OPENAI_MODEL_CONFIG"]["OPENAI_API_KEY"])
-            == "**********"
-        )
+        assert str(config_dict["LLM"]["OPENAI_MODEL_CONFIG"]["OPENAI_API_KEY"]) == "**********"
 
     def test_secret_str_fields_are_masked_in_json_dump(self, clean_env):
         """Test that SecretStr fields are masked in JSON mode dumps."""
@@ -56,9 +53,7 @@ class TestSensitiveDataHandling:
 
         # Check that sensitive fields are masked in JSON mode too
         assert config_dict["DB"]["USERNAME"] == "**********"
-        assert (
-            config_dict["LLM"]["OPENAI_MODEL_CONFIG"]["OPENAI_API_KEY"] == "**********"
-        )
+        assert config_dict["LLM"]["OPENAI_MODEL_CONFIG"]["OPENAI_API_KEY"] == "**********"
 
     def test_actual_secret_values_are_accessible(self, clean_env):
         """Test that actual secret values are accessible through get_secret_value()."""
@@ -81,7 +76,7 @@ class TestSensitiveDataHandling:
         os.environ["LLM__OPENAI_MODEL_CONFIG__OPENAI_API_KEY"] = "sk-secret-key"
 
         # Mock PROJECT_BASE_DIR for testing
-        from unittest.mock import patch
+        from unittest.mock import patch  # noqa: PLC0415
 
         with patch("config.helpers.config_exporter.PROJECT_BASE_DIR", temp_project_dir):
             dump_config_to_yaml("test_config.yaml")
@@ -108,7 +103,7 @@ class TestSensitiveDataHandling:
         os.environ["DB__PASSWORD"] = sensitive_values[0]
         os.environ["LLM__OPENAI_MODEL_CONFIG__OPENAI_API_KEY"] = sensitive_values[1]
 
-        from unittest.mock import patch
+        from unittest.mock import patch  # noqa: PLC0415
 
         with patch("config.helpers.config_exporter.PROJECT_BASE_DIR", temp_project_dir):
             dump_config_to_yaml("security_test.yaml")
@@ -118,9 +113,7 @@ class TestSensitiveDataHandling:
 
             # Verify none of the sensitive values appear in the output
             for sensitive_value in sensitive_values:
-                assert (
-                    sensitive_value not in content
-                ), f"Sensitive value '{sensitive_value}' found in YAML output"
+                assert sensitive_value not in content, f"Sensitive value '{sensitive_value}' found in YAML output"
 
     def test_model_dump_json_preserves_masking(self, clean_env):
         """Test that JSON dumps also preserve secret masking."""
@@ -146,7 +139,4 @@ class TestSensitiveDataHandling:
         assert "OPENAI_API_KEY" in config_dict["LLM"]["OPENAI_MODEL_CONFIG"]
 
         # Check that nested secret is masked
-        assert (
-            str(config_dict["LLM"]["OPENAI_MODEL_CONFIG"]["OPENAI_API_KEY"])
-            == "**********"
-        )
+        assert str(config_dict["LLM"]["OPENAI_MODEL_CONFIG"]["OPENAI_API_KEY"]) == "**********"

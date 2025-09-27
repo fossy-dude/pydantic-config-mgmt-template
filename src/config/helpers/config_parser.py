@@ -13,7 +13,7 @@ from pydantic import validate_call
 from ruamel.yaml import YAML
 
 
-def parse_yaml_raw_as_dict(raw: Union[str, bytes, IOBase, TextIO]) -> dict:
+def parse_yaml_raw_as_dict(raw: str | bytes | IOBase | TextIO) -> dict:
     """
     Parse raw YAML string as a dict object.
 
@@ -53,7 +53,7 @@ def parse_yaml_raw_as_dict(raw: Union[str, bytes, IOBase, TextIO]) -> dict:
 
 
 @validate_call(config={"arbitrary_types_allowed": True})
-def parse_yaml_file_as_dict(file: Union[Path, str, IOBase]) -> dict:
+def parse_yaml_file_as_dict(file: Path | str | IOBase) -> dict:
     """
     Parse YAML file as a dictionary.
 

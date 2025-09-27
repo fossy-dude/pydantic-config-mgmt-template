@@ -1,6 +1,4 @@
-"""
-Demonstrates usage of pydantic env variables.
-"""
+"""Demonstrates usage of pydantic env variables."""
 
 from config import get_config
 

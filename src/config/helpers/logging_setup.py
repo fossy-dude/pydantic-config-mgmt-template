@@ -21,7 +21,6 @@ def _create_formatter(config: LoggingConfig) -> logging.Formatter:
     logging.Formatter
         Configured formatter instance (JSON).
     """
-
     return pythonjsonlogger.json.JsonFormatter(
         "%(asctime)s %(name)s %(levelname)s %(message)s", datefmt=config.LOG_DATE_FORMAT
     )
@@ -46,7 +45,6 @@ def _create_console_handler(config: LoggingConfig, formatter: logging.Formatter)
     Optional[logging.StreamHandler]
         Console handler if enabled, None otherwise.
     """
-
     handler = logging.StreamHandler()
     handler.setLevel(config.LOG_LEVEL.value)
     handler.setFormatter(formatter)

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from ruamel.yaml import YAML
 
@@ -35,18 +35,18 @@ def dump_config_to_yaml(filename: str = "config_dump.yaml") -> None:
 
 
 def _flatten_config_dict(
-    config_dict: Dict[str, Any],
+    config_dict: dict[str, Any],
     parent_key: str = "",
     sep: str = "__",
     null_value="None",
     skip_secret_values: bool = True,
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """
     Flatten a nested dictionary into dotenv format with custom separator.
 
     Parameters
     ----------
-    config_dict : Dict[str, Any]
+    config_dict : dict[str, Any]
         The nested configuration dictionary to flatten.
     parent_key : str, optional
         The parent key prefix, by default ""
@@ -59,7 +59,7 @@ def _flatten_config_dict(
 
     Returns
     -------
-    Dict[str, str]
+    dict[str, str]
         Flattened dictionary with string keys and string values.
     """
     items = []

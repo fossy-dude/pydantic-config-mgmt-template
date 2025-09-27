@@ -1,7 +1,7 @@
 from pydantic import Field
 
-from config.models.aws import AWSConfig
 from config.helpers.base import BaseConfigModel
+from config.models.aws import AWSConfig
 from config.models.db import DBConfig
 from config.models.logging import LoggingConfig
 from config.models.lookup_files import LookupDataConfig

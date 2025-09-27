@@ -13,6 +13,7 @@ logger = get_logger(__name__)
 
 # ----------------------- Default project configuration ---------------------- #
 def load_config_yaml(filename: str = "config.yaml") -> dict | None:
+    """Load config from a yaml file and return as a dictionary."""
     path_config = Path(get_project_basedir(), filename)
 
     # Track YAML config file source
@@ -34,8 +35,9 @@ def load_config_yaml(filename: str = "config.yaml") -> dict | None:
         return None
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_config() -> AppConfig:
+    """Get the app configuration (using secrets, dotenv, config file and environment file)."""
     # Clear any previous source tracking
     clear_config_sources()
 

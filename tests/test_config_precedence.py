@@ -87,9 +87,7 @@ class TestConfigPrecedence:
         temp_dotenv_file.write_text("SERVICE_NAME=dotenv_value\n")
 
         # Create config with both secrets dir and env file
-        config = AppConfig(
-            _secrets_dir=str(temp_secrets_dir), _env_file=str(temp_dotenv_file)
-        )
+        config = AppConfig(_secrets_dir=str(temp_secrets_dir), _env_file=str(temp_dotenv_file))
 
         # Secret should have highest precedence
         assert config.SERVICE_NAME == "secret_value"

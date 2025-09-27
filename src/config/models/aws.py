@@ -6,17 +6,17 @@ from pydantic import AliasChoices, BaseModel, Field, SecretStr, model_validator
 class AWSConfig(BaseModel):
     """AWS configuration for authentication and service access."""
 
-    AWS_PROFILE: Optional[str] = Field(
+    AWS_PROFILE: str | None = Field(
         default=None,
         description="AWS CLI profile name to use for authentication",
         validation_alias=AliasChoices("AWS__AWS_PROFILE", "AWS_PROFILE"),
     )
-    AWS_ACCESS_KEY_ID: Optional[SecretStr] = Field(
+    AWS_ACCESS_KEY_ID: SecretStr | None = Field(
         default=None,
         description="AWS access key ID for authentication",
         validation_alias=AliasChoices("AWS__AWS_ACCESS_KEY_ID", "AWS_ACCESS_KEY_ID"),
     )
-    AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = Field(
+    AWS_SECRET_ACCESS_KEY: SecretStr | None = Field(
         default=None,
         description="AWS secret access key for authentication",
         validation_alias=AliasChoices("AWS__AWS_SECRET_ACCESS_KEY", "AWS_SECRET_ACCESS_KEY"),

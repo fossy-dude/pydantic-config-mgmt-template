@@ -7,8 +7,8 @@ help:  ## Show this help message
 install:  ## Install dependencies using uv
 	uv sync
 
-install-test:  ## Install dependencies including test dependencies
-	uv sync --extra test
+install-all:  ## Install all optional dependencies (dev & test)
+	uv sync --all-extras
 
 run:  ## Run the main application
 	python src/main.py
@@ -22,11 +22,18 @@ test-all:  ## Run tests across all Python versions with tox
 coverage:  ## Run tests with coverage report
 	tox -e coverage
 
-lint:  ## Run linting checks
-	tox -e lint
+.PHONY: lint
+lint:
+	cd "$(ROOT_DIR)" \
+	&& uvx --with tox-uv --python 3.12 tox -e lint \
+	&& cd "$(EXEC_DIR)"
 
-format:  ## Format code with ruff
-	ruff format .
+.PHONY: format
+format:
+	cd "$(ROOT_DIR)" \
+	&& uv run ruff check --select I,RUF022 --fix \
+	&& uv run ruff format . \
+	&& cd "$(EXEC_DIR)"
 
 dump_config_to_yaml:  ## Generate a YAML config file from current configuration
 	PYTHONPATH=src uv run python -c "from config.helpers.config_exporter import dump_config_to_yaml; dump_config_to_yaml('config_dump.yaml')"

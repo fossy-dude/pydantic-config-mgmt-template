@@ -15,9 +15,7 @@ class DBPerfConfig(BaseModel):
         Number of web workers for concurrent processing, defaults to 5.
     """
 
-    POOL_SIZE: Annotated[
-        int, Field(description="Total number of connections in the pool")
-    ] = 20
+    POOL_SIZE: Annotated[int, Field(description="Total number of connections in the pool")] = 20
     WEB_CONCURRENCY: Annotated[int, Field(description="Number of web workers")] = 5
 
 

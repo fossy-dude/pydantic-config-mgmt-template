@@ -1,14 +1,10 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Any, Type
+from typing import Annotated, Any
 
 from pydantic import BeforeValidator
-from pydantic_settings import (
-    BaseSettings,
-    PydanticBaseSettingsSource,
-    SettingsConfigDict,
-)
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 from config.helpers.get_project_basedir import get_project_basedir
 
@@ -59,7 +55,12 @@ def track_config_source(source_type: str, path: str, available: bool, descriptio
         Human-readable description of the source.
     """
     _config_sources.append(
-        ConfigSource(source_type=source_type, path=path, available=available, description=description)
+        ConfigSource(
+            source_type=source_type,
+            path=path,
+            available=available,
+            description=description,
+        )
     )
 
 
@@ -70,7 +71,7 @@ def clear_config_sources() -> None:
 
 
 def convert_to_absolute_path(path: str | Path) -> Path:
-    """Converts a Path object to its absolute form (incl expanding user home dir paths) and returns the resolved path"""
+    """Convert a Path object to its absolute form (incl expanding user home dir paths) and returns the resolved path."""
     x = Path(path).expanduser()
     if not x.is_absolute():
         x = Path(get_project_basedir(), path)
@@ -180,7 +181,7 @@ class BaseConfigModel(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls: Type[BaseSettings],
+        settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,
@@ -284,7 +285,6 @@ def assert_dir_exists(path: Path) -> Path:
     * Returns the absolute Path object.
 
     """
-
     try:
         path.mkdir(exist_ok=True, parents=True)
     except Exception:
@@ -294,8 +294,16 @@ def assert_dir_exists(path: Path) -> Path:
 
 
 # PathType - Simple wrapper around pathlib.Path - validates if a path exists and is valid
-RequiredFile = Annotated[PathLike, BeforeValidator(assert_file_exists), BeforeValidator(convert_to_absolute_path)]
-RequiredFolder = Annotated[PathLike, BeforeValidator(assert_dir_exists),BeforeValidator(convert_to_absolute_path)]
+RequiredFile = Annotated[
+    PathLike,
+    BeforeValidator(assert_file_exists),
+    BeforeValidator(convert_to_absolute_path),
+]
+RequiredFolder = Annotated[
+    PathLike,
+    BeforeValidator(assert_dir_exists),
+    BeforeValidator(convert_to_absolute_path),
+]
 
 
 def print_config_sources(logger: logging.Logger | None) -> None:
