@@ -22,17 +22,34 @@ test-all:  ## Run tests across all Python versions with tox
 coverage:  ## Run tests with coverage report
 	tox -e coverage
 
-.PHONY: lint
-lint:
+# Create a semantic version release (Requires GH_TOKEN to be set in the environment, with appropriate permissions)
+.PHONY: release
+release:
+	# Tags are deleted from local env for better changelog file creation
 	cd "$(ROOT_DIR)" \
-	&& uvx --with tox-uv --python 3.12 tox -e lint \
+	&& git tag -l '*dev*' | xargs git tag -d \
+	&& semantic-release version \
+	&& cd "$(EXEC_DIR)"
+
+# Create a semantic version release for dev environment (Requires GH_TOKEN to be set in the environment, with appropriate permissions)
+.PHONY: release_dev
+release_dev:
+	cd "$(ROOT_DIR)" \
+	&& semantic-release version --no-changelog --no-vcs-release \
 	&& cd "$(EXEC_DIR)"
 
 .PHONY: format
 format:
 	cd "$(ROOT_DIR)" \
-	&& uv run ruff check --select I,RUF022 --fix \
+	&& uv run ruff check --select I,RUF022 --fix --exit-zero \
 	&& uv run ruff format . \
+	&& cd "$(EXEC_DIR)"
+	#&& uv run nbstripout notebooks/*.ipynb \
+
+.PHONY: lint
+lint:
+	cd "$(ROOT_DIR)" \
+	&& uvx --with tox-uv --python 3.11 tox -e lint \
 	&& cd "$(EXEC_DIR)"
 
 dump_config_to_yaml:  ## Generate a YAML config file from current configuration

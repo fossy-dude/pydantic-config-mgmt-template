@@ -1,0 +1,90 @@
+name: Create release (With Tests)
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/uv.lock"
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-
+
+      - name: Create and activate virtual environment
+        run: |
+          uv tool install ruff
+          uv tool install "python-semantic-release>=8.7"
+
+      - name: Run formatter
+        run: |
+          ruff check --select I,RUF022 --fix --exit-zero \
+          && ruff format .
+
+      - name: Check branch status and formatting changes
+        id: git-check
+        run: |
+          # Fetch latest changes
+          git fetch origin
+          echo "🔍 Checking branch status..."
+          
+          # Check if branch is behind
+          if git status -uno | grep -q "behind"; then
+            echo "⚠️ Branch is behind remote"
+            echo "branch_behind=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Branch is up to date"
+            echo "branch_behind=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Check for formatting changes
+          echo "🔍 Checking for formatting changes..."
+          if ! git diff --quiet; then
+            echo "📝 Formatting changes detected"
+            echo "format_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ No formatting changes needed"
+          fi
+
+      - name: Commit formatting changes
+        if: steps.git-check.outputs.format_changes == 'true' && steps.git-check.outputs.branch_behind != 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "style: format code with ruff"
+          git push
+
+      - name: Create Release (main)
+        if: github.ref_name == 'main'
+        run: |
+          make release
+
+      - name: Create Release (dev)
+        if: github.ref_name == 'dev'
+        run: |
+          make release_dev
