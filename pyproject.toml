@@ -2,12 +2,12 @@
 name = "pydantic-config"
 version = "0.1.0"
 description = "An opinionated template for configuration management using pydantic lib"
-requires-python = ">=3.11"
 
 # ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │                                        uv dependency mgmt                                        │
 # └──────────────────────────────────────────────────────────────────────────────────────────────────┘
 
+requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.11.7",
     "pydantic-settings>=2.10.1",
@@ -31,7 +31,6 @@ test = [
 # ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │                                           Ruff Config                                            │
 # └──────────────────────────────────────────────────────────────────────────────────────────────────┘
-
 
 [tool.ruff]
 line-length = 120
@@ -186,30 +185,10 @@ keep-runtime-typing = true
 [tool.ruff.lint.pydocstyle]
 # Use numpy-style docstrings.
 convention = "numpy"
+
 # ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │                                          Pytest config                                           │
 # └──────────────────────────────────────────────────────────────────────────────────────────────────┘
-[tool.pylint.MASTER]
-# List of plugins (as comma separated values of python modules names) to load,
-# usually to register additional checkers.
-load-plugins = "pylint_pydantic"
-max-line-length = 120
-disable = [
-    "C0103", # (invalid-name)
-    "C0114", # (missing-module-docstring)
-    "C0115", # (missing-class-docstring)
-    # "C0116", # (missing-function-docstring)
-    "R0903", # (too-few-public-methods)
-    "R0913", # (too-many-arguments)
-    "W0105", # (pointless-string-statement)
-    "W0511", # (fixme)
-    "W0223", # (abstract-method)
-
-    ## Gradually bring in
-    "W0613", # (unused-argument)
-    "W2301", # (unnecessary-ellipsis)
-    "E1101", # (no-member) #Is a problem with Django. Cannot access objects from the ORM
-]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -235,6 +214,7 @@ addopts = [
 # ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │                                          Pyrefly config                                          │
 # └──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
 [tool.pyrefly]
 project-includes = ["src/*"]
 project-excludes = [
