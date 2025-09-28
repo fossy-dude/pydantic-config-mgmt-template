@@ -187,6 +187,10 @@ keep-runtime-typing = true
 # Use numpy-style docstrings.
 convention = "numpy"
 
+[tool.ruff.lint.pyflakes]
+#A list of modules to ignore when considering unused imports. These will not be removed even if unused
+allowed-unused-imports = []
+
 # ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │                                         Semantic Release                                         │
 # └──────────────────────────────────────────────────────────────────────────────────────────────────┘

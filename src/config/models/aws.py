@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import AliasChoices, BaseModel, Field, SecretStr, model_validator
 
 

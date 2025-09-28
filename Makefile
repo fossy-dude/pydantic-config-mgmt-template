@@ -41,7 +41,7 @@ release_dev:
 .PHONY: format
 format:
 	cd "$(ROOT_DIR)" \
-	&& uv run ruff check --select I,RUF022 --fix --exit-zero \
+	&& uv run ruff check --select I,RUF022,F401 --fix --exit-zero \
 	&& uv run ruff format . \
 	&& cd "$(EXEC_DIR)"
 	#&& uv run nbstripout notebooks/*.ipynb \

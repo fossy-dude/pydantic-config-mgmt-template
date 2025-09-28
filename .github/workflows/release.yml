@@ -42,7 +42,7 @@ jobs:
 
       - name: Run formatter
         run: |
-          ruff check --select I,RUF022 --fix --exit-zero \
+          ruff check --select I,RUF022,F401 --fix --exit-zero \
           && ruff format .
 
       - name: Check branch status and formatting changes

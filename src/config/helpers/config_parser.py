@@ -7,7 +7,7 @@ Source - https://github.com/NowanIlfideme/pydantic-yaml/blob/df903563ced25e26f43
 
 from io import BytesIO, IOBase, StringIO
 from pathlib import Path
-from typing import TextIO, Union
+from typing import TextIO
 
 from pydantic import validate_call
 from ruamel.yaml import YAML
