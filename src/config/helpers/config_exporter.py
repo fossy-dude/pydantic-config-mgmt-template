@@ -169,6 +169,7 @@ def _flatten_config_dict(
             # Convert lists to comma-separated strings
             items.append((new_key, ",".join(str(item) for item in value)))
         elif value is None:
+            # pyrefly: ignore  # bad-argument-type
             items.append((new_key, null_value))
         elif isinstance(value, bool):
             # Convert boolean to lowercase string for dotenv compatibility

@@ -66,10 +66,12 @@ def get_default_config_settings() -> dict[str, Any]:
 class BaseConfigModel(BaseSettings):
     """
     Base model for project's other pydantic models.
+
     - Provides base settings configurations (using base.DEFAULT_CONFIG_SETTINGS)
     - Provides default priority for sourcing settings (Env variables > Secrets > Dotenv vars > json/yaml/ other sources)
     """
 
+    # pyrefly: ignore  # bad-argument-type
     model_config = SettingsConfigDict(**DEFAULT_CONFIG_SETTINGS)
 
     @classmethod
@@ -83,6 +85,7 @@ class BaseConfigModel(BaseSettings):
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """
         Prefer environment variables when available, followed by default configuration (from json/yaml).
+
         Source - https://docs.pydantic.dev/latest/concepts/pydantic_settings/#changing-priority
         """
         # Add yaml file as source
@@ -90,6 +93,7 @@ class BaseConfigModel(BaseSettings):
         yml_src = YamlConfigSettingsSource(
             settings_cls=settings_cls, yaml_file=Path(get_project_basedir(), "config.yaml")
         )
+
         if should_use_aws_secrets_as_config_source():
             kwargs = {
                 _: DEFAULT_CONFIG_SETTINGS.get(_)
@@ -102,7 +106,9 @@ class BaseConfigModel(BaseSettings):
                 ]
             }
             aws_secrets_src = AWSSecretsManagerSettingsSource(
-                settings_cls=settings_cls, secret_id=get_aws_secrets_key(), **kwargs
+                settings_cls=settings_cls,
+                secret_id=get_aws_secrets_key(),
+                **kwargs,  # pyrefly: ignore  # bad-argument-type
             )
             return env_settings, aws_secrets_src, file_secret_settings, dotenv_settings, yml_src, init_settings
         return env_settings, file_secret_settings, dotenv_settings, yml_src, init_settings

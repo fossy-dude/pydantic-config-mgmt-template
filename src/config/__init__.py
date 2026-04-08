@@ -8,7 +8,22 @@ from utils.logging_helpers import get_logger
 logger = get_logger(__name__)
 
 
-def map_env_aliases_to_supported_env_vars():
+def map_env_aliases_to_supported_env_vars() -> None:
+    """
+    Map common environment variable aliases to Pydantic nested env var names.
+
+    Pydantic Settings uses the ``__`` delimiter to resolve nested model fields
+    from environment variables (e.g. ``AWS__AWS_PROFILE`` maps to
+    ``AppConfig.AWS.AWS_PROFILE``). This function copies well-known flat AWS
+    environment variable names into the corresponding nested names so that
+    both conventions are accepted transparently.
+
+    Notes
+    -----
+    Only copies a variable when the source key is present in the environment;
+    existing values for the target key are not preserved.
+    """
+
     def map(target, source):
         if os.environ.get(source):
             os.environ[target] = os.environ[source]

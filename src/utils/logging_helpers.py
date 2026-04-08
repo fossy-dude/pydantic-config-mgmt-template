@@ -8,6 +8,8 @@ def get_logger(name: str) -> logging.Logger:
 
 
 class ProgressStage(StrEnum):
+    """Enumeration of progress stages for logging."""
+
     STARTED = "STARTED"
     COMPLETED = "COMPLETED"
     PROCESSING = "PROCESSING"

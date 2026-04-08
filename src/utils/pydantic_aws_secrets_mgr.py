@@ -2,7 +2,6 @@ from __future__ import annotations as _annotations  # important for BaseSettings
 
 import json
 import os
-from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 import boto3
@@ -10,6 +9,8 @@ from pydantic_settings import EnvSettingsSource
 from pydantic_settings.sources.utils import parse_env_vars
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from pydantic_settings.main import BaseSettings
 
 
@@ -54,8 +55,10 @@ def get_aws_secret(secret_id: str) -> str:
 
 
 class AWSSecretsManagerSettingsSource(EnvSettingsSource):
+    """Custom settings source that loads configuration from AWS Secrets Manager."""
+
     _secret_id: str
-    _secretsmanager_client: SecretsManagerClient  # type: ignore
+    _secretsmanager_client: SecretsManagerClient  # type: ignore[type-arg]
 
     def __init__(
         self,
@@ -79,7 +82,7 @@ class AWSSecretsManagerSettingsSource(EnvSettingsSource):
         )
 
     def _load_env_vars(self) -> Mapping[str, str | None]:
-        # type: ignore
+        # type: ignore[override]
         secret = get_aws_secret(secret_id=self._secret_id)
         parsed_secret = json.loads(secret)
         return parse_env_vars(
@@ -90,6 +93,7 @@ class AWSSecretsManagerSettingsSource(EnvSettingsSource):
         )
 
     def __repr__(self) -> str:
+        """Return a string representation of the settings source."""
         return (
             f"{self.__class__.__name__}(secret_id={self._secret_id!r}, "
             f"env_nested_delimiter={self.env_nested_delimiter!r})"

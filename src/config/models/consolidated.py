@@ -34,5 +34,6 @@ class AppConfig(BaseConfigModel):
     SERVICE_NAME: str = "my_service_name"
     DB: DBConfig = Field(default_factory=DBConfig)
     AWS_CONFIG: AWSConfig = Field(default_factory=AWSConfig)
+    # pyrefly: ignore  # no-matching-overload
     LOOKUP_DATA: LookupDataConfig = Field(default_factory=LookupDataConfig)
     LOGGING: LoggingConfig = Field(default_factory=LoggingConfig)

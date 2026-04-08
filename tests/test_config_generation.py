@@ -48,6 +48,7 @@ class TestConfigGeneration:
         assert config.SERVICE_NAME == "my_service_name"
         assert config.DB.PORT == 5432
         assert config.AWS_CONFIG.AWS_PROFILE == "default"
+        # pyrefly: ignore  # missing-attribute
         assert config.LLM.VERBOSITY is False
 
     def test_config_caching(self, clean_env, sample_env_file):
