@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import Annotated, Any
 
-from config.helpers.aws_secrets import get_aws_secrets_key, should_use_aws_secrets_as_config_source
-from config.helpers.get_project_basedir import get_project_basedir
 from pydantic import BeforeValidator
 from pydantic_settings import (
     BaseSettings,
@@ -10,6 +8,9 @@ from pydantic_settings import (
     SettingsConfigDict,
     YamlConfigSettingsSource,
 )
+
+from config.helpers.aws_secrets import get_aws_secrets_key, should_use_aws_secrets_as_config_source
+from config.helpers.get_project_basedir import get_project_basedir
 from utils.pydantic_aws_secrets_mgr import AWSSecretsManagerSettingsSource
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
