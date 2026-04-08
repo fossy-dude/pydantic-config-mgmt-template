@@ -36,8 +36,10 @@ The configuration system is built around a layered architecture:
 - `lookup_files.py`: File path configurations with validation
 
 ### Configuration Sources Priority (Highest to Lowest)
-1. Docker secrets (`/run/secrets`)
-2. Environment variables
+
+Standard (default):
+1. Environment variables
+2. Docker secrets (`/run/secrets`) or AWS Secrets Manager (secret name resolved by `get_aws_secrets_key()`)
 3. `.env` files
 4. `config.yaml` file (optional)
 5. Default values in models

@@ -1,59 +1,32 @@
 # External Packages
 import functools
-from pathlib import Path
+import os
 
-from config.helpers.base import clear_config_sources, print_config_sources, track_config_source
-from config.helpers.config_parser import parse_yaml_file_as_dict
-from config.helpers.get_project_basedir import get_project_basedir
-from config.helpers.logging_setup import get_logger, setup_logging
 from config.models.consolidated import AppConfig
+from utils.logging_helpers import get_logger
 
 logger = get_logger(__name__)
 
 
-# ----------------------- Default project configuration ---------------------- #
-def load_config_yaml(filename: str = "config.yaml") -> dict | None:
-    """Load config from a yaml file and return as a dictionary."""
-    path_config = Path(get_project_basedir(), filename)
+def map_env_aliases_to_supported_env_vars():
+    def map(target, source):
+        if os.environ.get(source):
+            os.environ[target] = os.environ[source]
 
-    # Track YAML config file source
-    track_config_source(
-        source_type="yaml",
-        path=str(path_config),
-        available=path_config.exists() and path_config.is_file(),
-        description=f"YAML configuration file: {filename}",
-    )
-
-    if not path_config.exists():
-        logger.warning(f"Config file not found at expected path : '{path_config}'. Not using it as config source.")
-        return None
-
-    try:
-        config_dict = parse_yaml_file_as_dict(path_config)
-        return config_dict
-    except Exception:
-        return None
+    map("AWS__AWS_PROFILE", "AWS_PROFILE")
+    map("AWS__AWS_ACCESS_KEY_ID", "AWS_ACCESS_KEY_ID")
+    map("AWS__AWS_SECRET_ACCESS_KEY", "AWS_SECRET_ACCESS_KEY")
+    map("AWS__AWS_DEFAULT_REGION", "AWS_DEFAULT_REGION")
 
 
 @functools.cache
 def get_config() -> AppConfig:
     """Get the app configuration (using secrets, dotenv, config file and environment file)."""
-    # Clear any previous source tracking
-    clear_config_sources()
+    # Map some common aliases to env variables to supported env variables
+    map_env_aliases_to_supported_env_vars()
 
-    # Load YAML config (this will track the YAML source)
-    yaml_config = load_config_yaml()
-    if yaml_config is None:
-        yaml_config = {}
-
-    # Create config instance (this will track other sources via BaseConfigModel)
-    config = AppConfig(**yaml_config)
-
-    # Setup logging
-    setup_logging(config.LOGGING)
-    logger = get_logger(__name__)
-    # Print configuration sources information
-    print_config_sources(logger=logger)
+    # Load config from aws secrets, secret files, env, dotenv, yaml and other sources
+    config = AppConfig()
 
     return config
 

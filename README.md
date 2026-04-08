@@ -66,13 +66,21 @@ DB__PORT=5433
 
 ## Configuration Sources (Priority Order)
 
-1. **Docker Secrets** (`/run/secrets`) - Highest priority, for production secrets
-2. **Environment Variables** - Great for CI/CD and containerized deployments  
-3. **`.env` files** - Perfect for local development and team consistency
-4. **`config.yaml`** - Optional structured configuration
-5. **Default Values** - Sensible defaults defined in models
+The active priority order depends on whether AWS Secrets Manager is enabled (controlled by the `ENABLE_AWS_SECRETS_CONFIG` env var).
 
-What does this mean? If a variable is defined in both `.env` and `config.yaml`, the value in the higher priority source is preferred (`.env` in this case)
+**Standard (default):**
+
+| Priority | Source                                             | Notes |
+|----------|----------------------------------------------------|-------|
+| 1 (highest) | **Environment Variables**                          | Ideal for CI/CD and containerised deployments |
+| 2 | **Docker Secrets** (`/run/secrets`) or **AWS Secrets Manager** | For production secrets mounted by Docker/K8s |
+| 3 | **`.env` files**                                   | Perfect for local development and team consistency |
+| 4 | **`config.yaml`**                                  | Optional structured configuration |
+| 5 (lowest) | **Default Values**                                 | Sensible defaults defined in models |
+
+To enable AWS Secrets Manager as a config source, set `ENABLE_AWS_SECRETS_CONFIG=true` in your environment or `.env` file. The secret name is resolved by `get_aws_secrets_key()` in `src/config/helpers/aws_secrets.py`.
+
+What does this mean? If a variable is defined in both `.env` and `config.yaml`, the value in the higher priority source is preferred (`.env` in this case).
 
 ## Quick Start
 

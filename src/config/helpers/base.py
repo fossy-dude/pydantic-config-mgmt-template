@@ -1,73 +1,20 @@
-import logging
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated, Any
 
-from pydantic import BeforeValidator
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
-
+from config.helpers.aws_secrets import get_aws_secrets_key, should_use_aws_secrets_as_config_source
 from config.helpers.get_project_basedir import get_project_basedir
+from pydantic import BeforeValidator
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
+from utils.pydantic_aws_secrets_mgr import AWSSecretsManagerSettingsSource
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 PROJECT_BASE_DIR = get_project_basedir()
 PATH_ENV = Path(PROJECT_BASE_DIR, ".env")
-
-
-@dataclass
-class ConfigSource:
-    """Information about a configuration source."""
-
-    source_type: str
-    path: str
-    available: bool
-    description: str
-
-
-# Global variable to track config sources during loading
-_config_sources: list[ConfigSource] = []
-
-
-def get_config_sources() -> list[ConfigSource]:
-    """
-    Get the list of configuration sources that were checked during config loading.
-
-    Returns
-    -------
-    list[ConfigSource]
-        list of configuration sources with availability information.
-    """
-    return _config_sources.copy()
-
-
-def track_config_source(source_type: str, path: str, available: bool, description: str) -> None:
-    """
-    Track a configuration source during the loading process.
-
-    Parameters
-    ----------
-    source_type : str
-        Type of configuration source (e.g., 'yaml', 'env', 'dotenv', 'secrets').
-    path : str
-        Path or identifier for the source.
-    available : bool
-        Whether the source is available/readable.
-    description : str
-        Human-readable description of the source.
-    """
-    _config_sources.append(
-        ConfigSource(
-            source_type=source_type,
-            path=path,
-            available=available,
-            description=description,
-        )
-    )
-
-
-def clear_config_sources() -> None:
-    """Clear the tracked configuration sources list."""
-    global _config_sources
-    _config_sources = []
 
 
 def convert_to_absolute_path(path: str | Path) -> Path:
@@ -86,9 +33,11 @@ DEFAULT_CONFIG_SETTINGS = {
     "case_sensitive": True,
     "arbitrary_types_allowed": False,
     "env_nested_delimiter": "__",
-    "extra": "forbid",
+    "extra": "ignore",
     "env_file": (PATH_ENV,),
     "secrets_dir": "/run/secrets",
+    "validate_by_name": True,
+    "validate_by_alias": True,
 }
 
 
@@ -115,68 +64,12 @@ def get_default_config_settings() -> dict[str, Any]:
 
 class BaseConfigModel(BaseSettings):
     """
-    Base model for project's Pydantic models with configuration source priority handling.
-
-    Notes
-    -----
-    Provides base settings configurations using DEFAULT_CONFIG_SETTINGS including:
-    - case_sensitive: True (required for proper nested model env var sourcing)
-    - env_nested_delimiter: "__" (for nested environment variables like DB__HOST)
-    - env_file: Path to .env file in project root
-    - secrets_dir: "/run/secrets" for Docker secrets support
-
-    Configuration source priority (highest to lowest):
-    1. Secrets (from /run/secrets directory)
-    2. Environment variables
-    3. Dotenv files (.env)
-    4. YAML/JSON configuration files
-    5. Default values in model definitions
+    Base model for project's other pydantic models.
+    - Provides base settings configurations (using base.DEFAULT_CONFIG_SETTINGS)
+    - Provides default priority for sourcing settings (Env variables > Secrets > Dotenv vars > json/yaml/ other sources)
     """
 
-    model_config = SettingsConfigDict(**DEFAULT_CONFIG_SETTINGS)  # type: ignore[typeddict-item]
-
-    def __init__(self, **data: Any) -> None:
-        """Initialize the config model and track configuration sources."""
-        # Track sources before calling parent init
-        self._track_all_sources()
-        super().__init__(**data)
-
-    def _track_all_sources(self) -> None:
-        """Track all possible configuration sources and their availability."""
-        # Track secrets directory
-        secrets_dir_value = self.model_config.get("secrets_dir", "/run/secrets")
-        secrets_dir = Path(str(secrets_dir_value) if secrets_dir_value is not None else "/run/secrets")
-        track_config_source(
-            source_type="secrets",
-            path=str(secrets_dir),
-            available=secrets_dir.exists() and secrets_dir.is_dir(),
-            description=f"Docker secrets directory: {secrets_dir}",
-        )
-
-        # Track environment variables (we can't easily check all possible env vars,
-        # so we'll track that env vars are available as a source)
-        track_config_source(
-            source_type="environment",
-            path="system environment",
-            available=True,
-            description="System environment variables",
-        )
-
-        # Track .env files
-        env_files = self.model_config.get("env_file", ())
-        if env_files is None:
-            env_files = ()
-        elif isinstance(env_files, (str, Path)):
-            env_files = (env_files,)
-
-        for env_file in env_files:
-            env_path = Path(env_file)
-            track_config_source(
-                source_type="dotenv",
-                path=str(env_path),
-                available=env_path.exists() and env_path.is_file(),
-                description=f"Dotenv file: {env_path}",
-            )
+    model_config = SettingsConfigDict(**DEFAULT_CONFIG_SETTINGS)
 
     @classmethod
     def settings_customise_sources(
@@ -188,35 +81,30 @@ class BaseConfigModel(BaseSettings):
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """
-        Customize the priority order of configuration sources.
-
-        Parameters
-        ----------
-        settings_cls : Type[BaseSettings]
-            The settings class being configured.
-        init_settings : PydanticBaseSettingsSource
-            Settings passed during model initialization.
-        env_settings : PydanticBaseSettingsSource
-            Settings from environment variables.
-        dotenv_settings : PydanticBaseSettingsSource
-            Settings from .env files.
-        file_secret_settings : PydanticBaseSettingsSource
-            Settings from secrets files (e.g., Docker secrets).
-
-        Returns
-        -------
-        tuple[PydanticBaseSettingsSource, ...]
-            tuple of settings sources in priority order (highest to lowest).
-
-        Notes
-        -----
-        Priority order: secrets > environment variables > dotenv files > init settings.
-        This ensures that secrets have the highest priority, followed by environment
-        variables, then .env files, and finally default values from model initialization.
-
-        Reference: https://docs.pydantic.dev/latest/concepts/pydantic_settings/#changing-priority
+        Prefer environment variables when available, followed by default configuration (from json/yaml).
+        Source - https://docs.pydantic.dev/latest/concepts/pydantic_settings/#changing-priority
         """
-        return file_secret_settings, env_settings, dotenv_settings, init_settings
+        # Add yaml file as source
+
+        yml_src = YamlConfigSettingsSource(
+            settings_cls=settings_cls, yaml_file=Path(get_project_basedir(), "config.yaml")
+        )
+        if should_use_aws_secrets_as_config_source():
+            kwargs = {
+                _: DEFAULT_CONFIG_SETTINGS.get(_)
+                for _ in [
+                    "case_sensitive",
+                    "env_nested_delimiter",
+                    "env_parse_enums",
+                    "env_parse_none_str",
+                    "env_prefix",
+                ]
+            }
+            aws_secrets_src = AWSSecretsManagerSettingsSource(
+                settings_cls=settings_cls, secret_id=get_aws_secrets_key(), **kwargs
+            )
+            return env_settings, aws_secrets_src, file_secret_settings, dotenv_settings, yml_src, init_settings
+        return env_settings, file_secret_settings, dotenv_settings, yml_src, init_settings
 
 
 # Custom types with validators for common use-cases
@@ -304,23 +192,3 @@ RequiredFolder = Annotated[
     BeforeValidator(assert_dir_exists),
     BeforeValidator(convert_to_absolute_path),
 ]
-
-
-def print_config_sources(logger: logging.Logger | None) -> None:
-    """Print information about all configuration sources that were checked."""
-    if logger is None:
-        logger = logging.getLogger(__name__)
-    sources = get_config_sources()
-    if not sources:
-        logger.info("No configuration sources tracked.")
-        return
-    msg = "Configuration sources checked during loading:\n"
-    msg += "=" * 60
-
-    for source in sources:
-        status = "✓ Available" if source.available else "✗ Not available"
-        msg += f"\n[{source.source_type.upper()}]: {status:>13} | {source.description}"
-
-    msg += "\n" + "=" * 60
-    msg += "\nPriority order: Secrets > Environment Variables > Dotenv Files > YAML > Defaults"
-    logger.info(msg)

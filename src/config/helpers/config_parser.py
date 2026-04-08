@@ -1,7 +1,7 @@
 """
 Helper functions to read a YAML config file.
 
-Basically trims the functionality offered by pydantic_yaml to just return the parsed dict object
+Basically trims the functionality offered by pydantic_yaml to just return the parsed Dict object
 Source - https://github.com/NowanIlfideme/pydantic-yaml/blob/df903563ced25e26f43aa6a2e760cd370ae49dea/src/pydantic_yaml/loader.py # noqa
 """
 
@@ -14,28 +14,12 @@ from ruamel.yaml import YAML
 
 
 def parse_yaml_raw_as_dict(raw: str | bytes | IOBase | TextIO) -> dict:
-    """
-    Parse raw YAML string as a dict object.
+    """Parse raw YAML string as a dict object.
 
     Parameters
     ----------
-    raw : Union[str, bytes, IOBase, TextIO]
-        The YAML string or stream to parse.
-
-    Returns
-    -------
-    dict
-        Parsed YAML content as a dictionary.
-
-    Raises
-    ------
-    TypeError
-        If input is not str, bytes, or IOBase type.
-
-    Notes
-    -----
-    Supports YAML 1.2 specification using ruamel.yaml with safe loading.
-    Input can be a string, bytes, or any IO stream object.
+    raw : str or bytes or IOBase
+        The YAML string or stream.
     """
     stream: IOBase
     if isinstance(raw, str):
@@ -54,31 +38,14 @@ def parse_yaml_raw_as_dict(raw: str | bytes | IOBase | TextIO) -> dict:
 
 @validate_call(config={"arbitrary_types_allowed": True})
 def parse_yaml_file_as_dict(file: Path | str | IOBase) -> dict:
-    """
-    Parse YAML file as a dictionary.
+    """Parse YAML file as the passed model type.
 
     Parameters
     ----------
-    file : Union[Path, str, IOBase]
-        The file path or stream to read from. Can be a Path object,
-        string path, or IO stream.
-
-    Returns
-    -------
-    dict
-        Parsed YAML file content as a dictionary.
-
-    Raises
-    ------
-    TypeError
-        If file parameter is not Path, str, or IOBase type.
-
-    Notes
-    -----
-    If a string path is provided, it will be converted to a resolved Path object.
-    The function handles both file paths and IO streams uniformly.
+    file : Path or str or IOBase
+        The file path or stream to read from.
     """
-    # Short-circuit for IO streams
+    # Short-circuit
     if isinstance(file, IOBase):
         return parse_yaml_raw_as_dict(raw=file)
     if isinstance(file, str):
