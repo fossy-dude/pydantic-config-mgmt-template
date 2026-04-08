@@ -8,16 +8,13 @@ This is a Pydantic configuration template project demonstrating best practices f
 
 ## Development Commands
 
-- **Install dependencies**: `uv sync` (requires uv package manager)
-- **Install test dependencies**: `make install-test` or `uv sync --extra test`
-- **Run the demo**: `python src/main.py` 
-- **Run tests**: `make test` or `pytest tests/ -v`
-- **Run tests across Python versions**: `make test-all` or `tox`
-- **Run tests with coverage**: `make coverage` or `tox -e coverage`
-- **Run linting**: `make lint` or `tox -e lint`
-- **Format code**: `make format` or `tox -e format`
-- **Generate config YAML**: `make dump_config_to_yaml`
-- **Activate virtual environment**: After `uv sync`, activate the created virtual environment
+- **Install dependencies**: `uv sync` (requires uv package manager). use `uv sync --all-extras` by default during development
+- **Install test dependencies**: `uv sync --extra test` or `uv sync --all-extras`
+- **Run the demo**: `uv run src/main.py` 
+- **Run tests**: `just test`
+- **Run linting and formatting**: `just lint` or `tox -e lint`
+- **Format code**: `just format`
+- **Generate config YAML**: `just dump_config_to_yaml`
 
 ## Architecture
 
@@ -69,11 +66,9 @@ The project includes comprehensive tests covering:
 
 ### Test Commands
 
-- **Quick tests**: `make test` (current Python version only)
-- **Full test suite**: `make test-all` (tests across Python 3.11, 3.12 using tox)
-- **Coverage report**: `make coverage` (generates HTML and terminal coverage reports)
-- **Linting**: `make lint` (runs ruff and mypy checks). WHen a user asks you to run linter, run this and fix all issues
-- **Code formatting**: `make format` (formats code with ruff)
+- **Quick tests**: `just test` (current Python version only)
+- **Linting**: `just lint` (runs ruff and mypy checks). WHen a user asks you to run linter, run this and fix all issues
+- **Code formatting**: `just format` (formats code with ruff)
 
 Test configuration is in `pyproject.toml` under `[tool.pytest.ini_options]`. Test files are in the `tests/` directory.
 
@@ -174,7 +169,7 @@ Create a `.env` file based on `.env.example` to test environment variable sourci
   ```
 
 ### Validation
-- Run `make lint` before committing to ensure type hints and code quality
+- Run `just lint` before committing to ensure type hints and code quality
 - Use mypy for static type checking
 - All type hints must pass mypy validation without errors
 
